@@ -402,6 +402,7 @@ export async function smartDeploy(
             true
         ;
       const hasCoverageFormatterJsonSummary = (testlevel === 'NoTestRun' || branchConfig?.skipCodeCoverage === true) ? false : true;
+      const hasReportJunit = process.env?.REPORT_JUNIT === 'true';
       const deployCommand =
         `sf project deploy` +
         // (check && testlevel !== 'NoTestRun' ? ' validate' : ' start') + // Not until validate command is correct and accepts ignore-warnings
@@ -411,12 +412,13 @@ export async function smartDeploy(
         ` --manifest "${deployment.packageXmlFile}"` +
         ' --ignore-warnings' + // So it does not fail in for objectTranslations stuff for example
         ' --ignore-conflicts' + // With CICD we are supposed to ignore them
-        ((hasCoverageFormatterJson || hasCoverageFormatterJsonSummary) ? ` --results-dir ${reportDir}` : '') +
+        ((hasCoverageFormatterJson || hasCoverageFormatterJsonSummary || hasReportJunit) ? ` --results-dir ${reportDir}` : '') +
         ` --test-level ${testlevel}` +
         (options.testClasses && testlevel !== 'NoTestRun' ? ` --tests ${options.testClasses}` : '') +
         (options.preDestructiveChanges ? ` --pre-destructive-changes ${options.preDestructiveChanges}` : '') +
         (options.postDestructiveChanges && !(options.destructiveChangesAfterDeployment === true) ? ` --post-destructive-changes ${options.postDestructiveChanges}` : '') +
         (options.targetUsername ? ` -o ${options.targetUsername}` : '') +
+        (hasReportJunit ? ' --junit' : '') +
         (hasCoverageFormatterJsonSummary ? ' --coverage-formatters json-summary' : '') +
         (hasCoverageFormatterJson ? ' --coverage-formatters json' : '') +
         (debugMode ? ' --verbose' : '') +
@@ -1606,4 +1608,3 @@ export async function generateApexCoverageOutputFile(): Promise<void> {
     uxLog("error", this, c.red(`Error while generating Apex coverage output file: ${e.message}`));
   }
 }
-
