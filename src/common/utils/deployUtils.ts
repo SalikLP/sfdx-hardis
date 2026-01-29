@@ -403,7 +403,7 @@ export async function smartDeploy(
         ;
       const hasCoverageFormatterJsonSummary = (testlevel === 'NoTestRun' || branchConfig?.skipCodeCoverage === true) ? false : true;
       const hasAlternativeCoverageFormatter =
-        (process.env?.ALTERNATIVE_COVERAGE_FORMATTER === "true" && process.env?.ALTERNATIVE_COVERAGE_FORMAT !== null && testlevel !== 'NoTestRun') ?
+        (process.env?.ALTERNATIVE_COVERAGE_FORMATTER === "true" && parseAlternativeCoverageFormat(process.env?.ALTERNATIVE_COVERAGE_FORMAT) !== null && testlevel !== 'NoTestRun') ?
           true :
           (testlevel === 'NoTestRun' || branchConfig?.skipCodeCoverage === true) ?
             false :
@@ -428,10 +428,10 @@ export async function smartDeploy(
         (options.preDestructiveChanges ? ` --pre-destructive-changes ${options.preDestructiveChanges}` : '') +
         (options.postDestructiveChanges && !(options.destructiveChangesAfterDeployment === true) ? ` --post-destructive-changes ${options.postDestructiveChanges}` : '') +
         (options.targetUsername ? ` -o ${options.targetUsername}` : '') +
-        (hasReportJunit ? ' --junit' : '') +
         (hasCoverageFormatterJsonSummary ? ' --coverage-formatters json-summary' : '') +
         (hasCoverageFormatterJson ? ' --coverage-formatters json' : '') +
         (hasAlternativeCoverageFormatter ? ` --coverage-formatters ${alternativeCoverageFormat}` : '') +
+        (hasReportJunit ? ' --junit' : '') +
         (debugMode ? ' --verbose' : '') +
         ` --wait ${getEnvVar("SFDX_DEPLOY_WAIT_MINUTES") || '120'}` +
         (process.env.SFDX_DEPLOY_DEV_DEBUG ? ' --dev-debug' : '') +
@@ -1546,6 +1546,34 @@ export async function checkDeploymentOrgCoverage(orgCoverage: number, options: a
       )
     );
   }
+}
+
+// Validate alternative coverage format to avoid flag/argument injection
+async function parseAlternativeCoverageFormat(raw?: string): Promise<string | null> {
+  // All allowed values from https://developer.salesforce.com/docs/atlas.en-us.sfdx_cli_reference.meta/sfdx_cli_reference/cli_reference_project_commands_unified.htm#cli_reference_project_deploy_start_unified
+  const ALLOWED_ALT_COVERAGE_FORMATS = new Set([
+    'clover',
+    'cobertura',
+    'html-spa',
+    'html',
+    'json',
+    'json-summary',
+    'lcovonly',
+    'none',
+    'teamcity',
+    'text',
+    'text-summary'
+  ]);
+  if (!raw) return null;
+  const value = raw.trim().toLowerCase();
+  if (value.length === 0) return null;
+  if (!ALLOWED_ALT_COVERAGE_FORMATS.has(value)) {
+    throw new SfError(
+      `Invalid ALTERNATIVE_COVERAGE_FORMAT: "${raw}". ` +
+      `Allowed values: ${[...ALLOWED_ALT_COVERAGE_FORMATS].join(', ')}`
+    );
+  }
+  return value;
 }
 
 async function checkDeploymentErrors(e, options, commandThis = null) {
