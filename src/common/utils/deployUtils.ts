@@ -402,7 +402,17 @@ export async function smartDeploy(
             true
         ;
       const hasCoverageFormatterJsonSummary = (testlevel === 'NoTestRun' || branchConfig?.skipCodeCoverage === true) ? false : true;
-      const hasReportJunit = process.env?.REPORT_JUNIT === 'true';
+      const hasAlternativeCoverageFormatter =
+        (process.env?.ALTERNATIVE_COVERAGE_FORMATTER === "true" && process.env?.ALTERNATIVE_COVERAGE_FORMAT !== null && testlevel !== 'NoTestRun') ?
+          true :
+          (testlevel === 'NoTestRun' || branchConfig?.skipCodeCoverage === true) ?
+            false :
+            true
+        ;
+      const alternativeCoverageFormat = process.env?.ALTERNATIVE_COVERAGE_FORMAT;
+      const hasReportJunit = (process.env?.REPORT_JUNIT === 'true' && testlevel !== 'NoTestRun') ? true : false;
+
+      // const hasReportJunit = process.env?.REPORT_JUNIT === 'true';
       const deployCommand =
         `sf project deploy` +
         // (check && testlevel !== 'NoTestRun' ? ' validate' : ' start') + // Not until validate command is correct and accepts ignore-warnings
@@ -421,6 +431,7 @@ export async function smartDeploy(
         (hasReportJunit ? ' --junit' : '') +
         (hasCoverageFormatterJsonSummary ? ' --coverage-formatters json-summary' : '') +
         (hasCoverageFormatterJson ? ' --coverage-formatters json' : '') +
+        (hasAlternativeCoverageFormatter ? ` --coverage-formatters ${alternativeCoverageFormat}` : '') +
         (debugMode ? ' --verbose' : '') +
         ` --wait ${getEnvVar("SFDX_DEPLOY_WAIT_MINUTES") || '120'}` +
         (process.env.SFDX_DEPLOY_DEV_DEBUG ? ' --dev-debug' : '') +
