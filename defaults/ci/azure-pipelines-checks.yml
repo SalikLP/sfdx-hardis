@@ -96,7 +96,25 @@ jobs:
           BUILD_SOURCEBRANCHNAME: $(Build.SourceBranchName)
           BUILD_BUILD_ID: $(Build.BuildId)
           SFDX_DISABLE_FLOW_DIFF: false # Set to true to disable Flow doc during CI/CD setup
+          REPORT_JUNIT: true
+          ALTERNATIVE_COVERAGE_FORMATTER: true
+          ALTERNATIVE_COVERAGE_FORMAT: "clover"
         displayName: "Simulate deploy to org"
+
+      # Publish test results to Azure Pipelines.
+      - task: PublishTestResults@2
+        inputs:
+          testResultsFormat: "JUnit"
+          testResultsFiles: "**/junit.xml"
+          searchFolder: "$(System.DefaultWorkingDirectory)/hardis-report/"
+        displayName: "Publish Test Results"
+
+      # Publish code coverage Results to Azure Pipelines
+      - task: PublishCodeCoverageResults@2
+        inputs:
+          summaryFileLocation: "$(System.DefaultWorkingDirectory)/hardis-report/coverage/clover.xml"
+        displayName: "Publish Coverage Results"
+
 
   # Run MegaLinter to detect linting and security issues
   # https://megalinter.io/latest/flavors/salesforce/
