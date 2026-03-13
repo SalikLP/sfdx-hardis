@@ -151,9 +151,9 @@ export async function computeCommitsSummary(checkOnly, pullRequestInfo: CommonPu
     previousTargetBranchCommit = "HEAD^"
     logResults = [...logRes.all];
   }
-  uxLog("action", this, c.cyan(`logResults before: ${logResults}`));
+  uxLog("action", this, c.cyan(`logResults before: ${JSON.stringify(logResults, null, 2)}`));
   logResults = arrayUniqueByKeys(logResults, ['message', 'body']).reverse();
-  uxLog("action", this, c.cyan(`logResults after: ${logResults}`));
+  uxLog("action", this, c.cyan(`logResults after: ${JSON.stringify(logResults, null, 2)}`));
   let commitsSummary = '## Commits summary\n\n';
   const manualActions: any[] = [];
   const tickets: Ticket[] = [];
@@ -260,7 +260,7 @@ export async function computeCommitsSummary(checkOnly, pullRequestInfo: CommonPu
 }
 
 async function collectTicketsAndManualActions(str: string, tickets: Ticket[], manualActions: any[], options: any) {
-  uxLog("action", this, c.cyan(`collectTicketsAndManualActions() str: ${str} - tickets: ${tickets} - manualActions: ${manualActions} - options: ${options}`));
+  uxLog("action", this, c.cyan(`collectTicketsAndManualActions() str: ${str} - tickets: ${tickets} - manualActions: ${manualActions} - options: ${JSON.stringify(options, null, 2)}`));
   const foundTickets = await TicketProvider.getProvidersTicketsFromString(str, options);
   uxLog("action", this, c.cyan(`foundTickets: ${foundTickets}`));
   tickets.push(...foundTickets);

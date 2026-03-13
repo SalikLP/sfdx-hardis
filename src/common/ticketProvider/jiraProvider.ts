@@ -72,10 +72,12 @@ export class JiraProvider extends TicketProviderRoot {
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public static async getTicketsFromString(text: string, options = {}): Promise<Ticket[]> {
+    uxLog("action", this, c.cyan(`[JiraProvider] getTicketsFromString() text: ${text}`));
     const tickets: Ticket[] = [];
     // Extract JIRA tickets using URL references
     const jiraUrlRegex = /(https:\/\/.*(jira|atlassian\.net).*\/[A-Z0-9]+-\d+\b)/g;
     const jiraMatches = await extractRegexMatches(jiraUrlRegex, text);
+    uxLog("action", this, c.cyan(`[JiraProvider] getTicketsFromString() jiraMatches: ${jiraMatches}`));
     for (const jiraTicketUrl of jiraMatches) {
       const pattern = /https:\/\/.*\/([A-Z0-9]+-\d+\b)/;
       const match = jiraTicketUrl.match(pattern);
@@ -95,11 +97,18 @@ export class JiraProvider extends TicketProviderRoot {
     const jiraBaseUrl = getEnvVar("JIRA_HOST") || config.jiraHost || "https://define.JIRA_HOST.in.cicd.variables/";
     const jiraRegex = getEnvVar("JIRA_TICKET_REGEX") || config.jiraTicketRegex || "(?<=[^a-zA-Z0-9_-]|^)([A-Za-z0-9]{2,10}-\\d{1,6})(?=[^a-zA-Z0-9_-]|$)";
     const jiraRefRegex = new RegExp(jiraRegex, "gm");
+    uxLog("action", this, c.cyan(`[JiraProvider] getTicketsFromString() jiraRegex: ${jiraRegex}`));
     const jiraRefs = await extractRegexMatches(jiraRefRegex, text);
+    uxLog("action", this, c.cyan(`[JiraProvider] getTicketsFromString() jiraRefs: ${jiraRefs}`));
     const jiraBaseUrlBrowse = jiraBaseUrl.replace(/\/$/, "") + "/browse/";
     for (const jiraRef of jiraRefs) {
       const jiraTicketUrl = jiraBaseUrlBrowse + jiraRef;
       if (!tickets.some((ticket) => ticket.url === jiraTicketUrl || ticket.id === jiraRef)) {
+        uxLog("action", this, c.cyan(`[JiraProvider] getTicketsFromString() tickets.push(): ${{
+          provider: "JIRA",
+          url: jiraTicketUrl,
+          id: jiraRef,
+        }}`));
         tickets.push({
           provider: "JIRA",
           url: jiraTicketUrl,
