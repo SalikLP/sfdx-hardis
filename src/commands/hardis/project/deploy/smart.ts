@@ -453,9 +453,9 @@ If testlevel=RunRepositoryTests, can contain a regular expression to keep only c
     }
 
     // Send notification of deployment success
-    if (deployExecuted) {
-      await handlePostDeploymentNotifications(flags, targetUsername, quickDeploy, this.delta, this.debugMode);
-    }
+    await handlePostDeploymentNotifications(flags, targetUsername, quickDeploy, this.delta, this.debugMode);
+    // if (deployExecuted) {
+    // }
     // Return result
     return { orgId: flags['target-org'].getOrgId(), outputString: messages.join('\n') };
   }

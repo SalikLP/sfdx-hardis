@@ -151,7 +151,9 @@ export async function computeCommitsSummary(checkOnly, pullRequestInfo: CommonPu
     previousTargetBranchCommit = "HEAD^"
     logResults = [...logRes.all];
   }
+  uxLog("action", this, c.cyan(`logResults before: ${logResults}`));
   logResults = arrayUniqueByKeys(logResults, ['message', 'body']).reverse();
+  uxLog("action", this, c.cyan(`logResults after: ${logResults}`));
   let commitsSummary = '## Commits summary\n\n';
   const manualActions: any[] = [];
   const tickets: Ticket[] = [];
@@ -174,6 +176,7 @@ export async function computeCommitsSummary(checkOnly, pullRequestInfo: CommonPu
       commitsSummary += '\n\n';
     }
   }
+  uxLog("action", this, c.cyan(`Commitsummary: ${commitsSummary}`));
 
   // Tickets and references can also be in PR description
   if (pullRequestInfo) {
@@ -257,7 +260,9 @@ export async function computeCommitsSummary(checkOnly, pullRequestInfo: CommonPu
 }
 
 async function collectTicketsAndManualActions(str: string, tickets: Ticket[], manualActions: any[], options: any) {
+  uxLog("action", this, c.cyan(`collectTicketsAndManualActions() str: ${str} - tickets: ${tickets} - manualActions: ${manualActions} - options: ${options}`));
   const foundTickets = await TicketProvider.getProvidersTicketsFromString(str, options);
+  uxLog("action", this, c.cyan(`foundTickets: ${foundTickets}`));
   tickets.push(...foundTickets);
   // Extract manual actions if defined
   const manualActionsRegex = /MANUAL ACTION:(.*)/gm;
