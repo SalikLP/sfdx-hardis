@@ -317,8 +317,11 @@ async function getMermaidBody(flowMap: FlowMap): Promise<string> {
                 break;
             case 'loops':
                 loopNextNode = node.nextValueConnector;
+                // "After Last" is always the main-flow continuation; declare it first with a longer
+                // arrow (4 dashes) so Mermaid reserves 2 ranks of space for the loop-body nodes,
+                // preventing "For Each" cycle edges from crossing the exit arrow.
+                bodyStr += node.name + ' ----> |"After Last"|' + node.nextNode + "\n";
                 bodyStr += node.name + ' --> |"For Each"|' + loopNextNode + "\n";
-                bodyStr += node.name + ' ---> |"After Last"|' + node.nextNode + "\n";
                 break;
             case 'subflows':
                 bodyStr += node.name + " --> " + nextNode + "\n";
